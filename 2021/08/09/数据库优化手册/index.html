@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tomotopieces.github.io","root":"/","images":"/images","scheme":"Mist","version":"8.7.0","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="以MySQL为例的数据库优化手册">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库优化手册">
+<meta property="og:url" content="https://tomotopieces.github.io/2021/08/09/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BC%98%E5%8C%96%E6%89%8B%E5%86%8C/index.html">
+<meta property="og:site_name" content="Tomoto&#39;s Blog">
+<meta property="og:description" content="以MySQL为例的数据库优化手册">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-08-09T00:57:04.000Z">
+<meta property="article:modified_time" content="2021-09-09T06:05:50.897Z">
+<meta property="article:author" content="Tomoto">
+<meta property="article:tag" content="database">
+<meta property="article:tag" content="mysql">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://tomotopieces.github.io/2021/08/09/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BC%98%E5%8C%96%E6%89%8B%E5%86%8C/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tomotopieces.github.io/2021/08/09/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BC%98%E5%8C%96%E6%89%8B%E5%86%8C/","path":"2021/08/09/数据库优化手册/","title":"数据库优化手册"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>数据库优化手册 | Tomoto's Blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Tomoto's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">隐藏关卡</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+        <li class="menu-item menu-item-友链"><a href="/friends/" rel="section"><i class="fa fa-user fa-fw"></i>友链</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BC%98%E5%8C%96%E6%89%8B%E5%86%8C"><span class="nav-number">1.</span> <span class="nav-text">数据库优化手册</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D-%C2%A7-Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">介绍 § Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95-%C2%A7-Index"><span class="nav-number">1.2.</span> <span class="nav-text">索引 § Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.2.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8"><span class="nav-number">1.2.2.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E7%B4%A2%E5%BC%95"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">普通索引</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E8%A1%A8%E7%9A%84%E7%B4%A2%E5%BC%95"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">查看表的索引</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E8%A7%A3%E9%87%8A"><span class="nav-number">1.2.2.2.1.</span> <span class="nav-text">字段解释</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E8%AF%AD%E5%8F%A5%E4%BD%BF%E7%94%A8%E5%88%B0%E7%9A%84%E7%B4%A2%E5%BC%95"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">查看语句使用到的索引</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E7%B4%A2%E5%BC%95"><span class="nav-number">1.2.3.</span> <span class="nav-text">其他索引</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%89%8D%E7%BC%80%E7%B4%A2%E5%BC%95"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">前缀索引</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">联合索引</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%80%E5%B7%A6%E5%8C%B9%E9%85%8D%E5%8E%9F%E5%88%99"><span class="nav-number">1.2.3.2.1.</span> <span class="nav-text">最左匹配原则</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B"><span class="nav-number">1.2.3.2.2.</span> <span class="nav-text">举例</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92-%C2%A7-Explain"><span class="nav-number">1.3.</span> <span class="nav-text">执行计划 § Explain</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D-1"><span class="nav-number">1.3.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-1"><span class="nav-number">1.3.2.</span> <span class="nav-text">使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">测试</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5%E8%A7%A3%E9%87%8A-1"><span class="nav-number">1.3.2.1.1.</span> <span class="nav-text">字段解释</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97-%C2%A7-Slow-Query-Log"><span class="nav-number">1.4.</span> <span class="nav-text">慢查询日志 § Slow Query Log</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D-2"><span class="nav-number">1.4.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="nav-number">1.4.2.</span> <span class="nav-text">配置与使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%80%E5%90%AF%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">开启慢查询日志记录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">查看慢查询日志记录</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96%E6%89%8B%E6%AE%B5%E4%B8%8E%E7%BB%86%E8%8A%82-%C2%A7-Details"><span class="nav-number">1.5.</span> <span class="nav-text">其他优化手段与细节 § Details</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-%C2%A7-Summary"><span class="nav-number">1.6.</span> <span class="nav-text">总结 § Summary</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.7.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Tomoto</p>
+  <div class="site-description" itemprop="description">Secret Level</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tomotopieces" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tomotopieces" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1042751682@qq.com" title="E-Mail → mailto:1042751682@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/Tomotopieces" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tomotopieces.github.io/2021/08/09/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BC%98%E5%8C%96%E6%89%8B%E5%86%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Tomoto">
+      <meta itemprop="description" content="Secret Level">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tomoto's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据库优化手册
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-08-09 08:57:04" itemprop="dateCreated datePublished" datetime="2021-08-09T08:57:04+08:00">2021-08-09</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2021-09-09 14:05:50" itemprop="dateModified" datetime="2021-09-09T14:05:50+08:00">2021-09-09</time>
+      </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>以MySQL为例的数据库优化手册</p>
+<span id="more"></span>
+
+<h1 id="数据库优化手册"><a href="#数据库优化手册" class="headerlink" title="数据库优化手册"></a>数据库优化手册</h1><blockquote>
+<p>本文使用MySQL 5.7.35为例</p>
+</blockquote>
+<blockquote>
+<p>请重点关注文档中的加粗部分</p>
+</blockquote>
+<h2 id="介绍-§-Introduction"><a href="#介绍-§-Introduction" class="headerlink" title="介绍 § Introduction"></a>介绍 § Introduction</h2><p>天下苦数据库优化久矣, 本文以读者已熟悉基本的<code>MySQL</code>增删改查语句为前提, 介绍以<strong>索引</strong>, <strong><code>Explain</code>语句</strong>与<strong>慢查询日志</strong>三项为主的优化方法, 希望对您有所帮助</p>
+<p>还有如事务, 分库分表之类的做法可能会在日后完善</p>
+<h2 id="索引-§-Index"><a href="#索引-§-Index" class="headerlink" title="索引 § Index"></a>索引 § Index</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>数据库可以通过索引来提高数据的检索速度</p>
+<p>在查询语句中的<code>WHERE</code>部分使用到索引字段时, 就会使用索引进行查询</p>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><h4 id="普通索引"><a href="#普通索引" class="headerlink" title="普通索引"></a>普通索引</h4><p>若存在表<code>user</code>如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建一个用户表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `<span class="keyword">user</span>` (</span><br><span class="line">    `id` <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">    `username` <span class="type">VARCHAR</span>(<span class="number">32</span>) COMMENT <span class="string">&#x27;用户名&#x27;</span>,</span><br><span class="line">    `password` <span class="type">VARCHAR</span>(<span class="number">32</span>) COMMENT <span class="string">&#x27;密码&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>方法一, 可以通过如下语句来创建一个将<code>username</code>作为索引字段的索引</p>
+ <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 以用户名作为索引字段, 给用户表建立索引</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX `username_index` <span class="keyword">ON</span> `<span class="keyword">user</span>` (`username`);</span><br></pre></td></tr></table></figure></li>
+<li><p>方法二, 或者在创建表的同时创建索引</p>
+ <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `<span class="keyword">user</span>` (</span><br><span class="line">    `id` <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">    `username` <span class="type">VARCHAR</span>(<span class="number">32</span>) COMMENT <span class="string">&#x27;用户名&#x27;</span>,</span><br><span class="line">    `password` <span class="type">VARCHAR</span>(<span class="number">32</span>) COMMENT <span class="string">&#x27;密码&#x27;</span>,</span><br><span class="line">    <span class="comment">-- 在创建表的同时创建索引</span></span><br><span class="line">    INDEX `username_index` (`username`)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>方法三, 也可以在表创建后修改表内容来创建索引</p>
+ <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> `<span class="keyword">user</span>` <span class="keyword">ADD</span> INDEX `username_index`(`username`);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="查看表的索引"><a href="#查看表的索引" class="headerlink" title="查看表的索引"></a>查看表的索引</h4><p>可以通过如下语句来查看一个表有哪些索引</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 显示用户表的索引</span></span><br><span class="line"><span class="keyword">SHOW</span> INDEX <span class="keyword">FROM</span> `<span class="keyword">user</span>`;</span><br></pre></td></tr></table></figure>
+
+<p>显示结果</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Non_unique</th>
+<th>Key_name</th>
+<th>Seq_in_index</th>
+<th>Column_name</th>
+<th>Collation</th>
+<th>Cardinality</th>
+<th>Sub_part</th>
+<th>Packed</th>
+<th>Null</th>
+<th>Index_type</th>
+<th>Comment</th>
+<th>Index_comment</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>user</td>
+<td>0</td>
+<td>PRIMARY</td>
+<td>1</td>
+<td>id</td>
+<td>A</td>
+<td>0</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td></td>
+<td>BTREE</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>user</td>
+<td>1</td>
+<td>username_index</td>
+<td>1</td>
+<td>username</td>
+<td>A</td>
+<td>0</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td>YES</td>
+<td>BTREE</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>可以看到一条默认存在的以<code>id</code>作为索引字段的索引和刚创建的以<code>username</code>作为索引字段的<code>username_indesx</code></p>
+<h5 id="字段解释"><a href="#字段解释" class="headerlink" title="字段解释"></a><strong>字段解释</strong></h5><ol>
+<li><p><code>Table</code>: 表名</p>
+</li>
+<li><p><code>Non_unique</code>: 是否是<strong>唯一索引</strong>, 0为唯一索引, <code>PRIMARY</code>就是唯一索引</p>
+</li>
+<li><p><code>Key_Name</code>: 索引名</p>
+</li>
+<li><p><code>Squ_in_index</code>: 列的序列号, 标识该列在该索引中的顺序</p>
+<ul>
+<li>普通索引只有一个列, 故序号为1, 下文提及的联合索引会有所不同</li>
+</ul>
+</li>
+<li><p><code>Column_name</code>: 列名</p>
+</li>
+<li><p><code>Collation</code>: 列的存储字符序</p>
+<ul>
+<li>值可以为: <code>A</code>(升序)或<code>NULL</code>(无分类)</li>
+</ul>
+</li>
+<li><p><code>Cardinality</code>: 基数, 代表表中此列数据为唯一值的估计值</p>
+<ul>
+<li><p><strong>若该值较低, 则需要重新思考是否有这条索引存在的必要</strong></p>
+</li>
+<li><p>此处为零因为数据库中暂无数据</p>
+</li>
+</ul>
+</li>
+<li><p><code>Sub_part</code>: 前缀索引的前缀长度</p>
+<ul>
+<li><p>若索引非前缀索引, 或字段并未取前缀, 则为<code>null</code></p>
+</li>
+<li><p>前缀索引的概念见下</p>
+</li>
+</ul>
+</li>
+<li><p><code>Packed</code>: 索引字段的压缩方式, 若未压缩则为<code>null</code></p>
+</li>
+<li><p><code>NULL</code>: 列中是否允许存在<code>null</code>值</p>
+<ul>
+<li><strong>作为索引的列不允许存在<code>null</code>值</strong>, 所以这里的<code>username</code>作为索引是不符合规范的</li>
+<li>这里可以为<code>username</code>列添加<code>NOT NULL</code>来避免这一情况</li>
+</ul>
+</li>
+<li><p><code>Index_type</code>: 索引类型</p>
+<ul>
+<li>可能值<ol>
+<li><code>FULLTEXT</code>: 全表检索索引</li>
+<li><code>HASH</code>: 哈希值索引, 类似键值对的形式存储索引, 效率极高<ul>
+<li><code>InnoDB</code>引擎不支持<code>HASH</code>类型<code>Index_type</code></li>
+</ul>
+</li>
+<li><code>BTREE</code>: 一种树形索引, <strong>默认且最常用</strong></li>
+<li><code>RTREE</code>: 一种树形索引, 较少用, 比<code>BTREE</code>的优势在于范围查找</li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p><code>Comment</code>与<code>Index_comment</code>: 注释</p>
+</li>
+</ol>
+<h4 id="查看语句使用到的索引"><a href="#查看语句使用到的索引" class="headerlink" title="查看语句使用到的索引"></a>查看语句使用到的索引</h4><blockquote>
+<p>详细解释请阅读下文 <em>执行计划 § Explain</em> 部分</p>
+</blockquote>
+<p>可以通过在查询语句前加上关键字<code>EXPALIN</code>来查看这条语句所使用到的索引</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查看这条查询语句所用到的索引</span></span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">user</span>` <span class="keyword">WHERE</span> `username` <span class="operator">=</span> &quot;&quot;;</span><br></pre></td></tr></table></figure>
+
+<p>显示结果</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>user</td>
+<td><code>null</code></td>
+<td>ref</td>
+<td>username_index</td>
+<td>username_index</td>
+<td>99</td>
+<td>const</td>
+<td>1</td>
+<td>100.00</td>
+<td><code>null</code></td>
+</tr>
+</tbody></table>
+<p>可以看到, 这里用到了<code>username_index</code>这个索引</p>
+<h3 id="其他索引"><a href="#其他索引" class="headerlink" title="其他索引"></a>其他索引</h3><h4 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h4><p>当列的类型为<code>BLOB</code>或<code>TEXT</code>一类或者长度很长的<code>VARCHAR</code>时, 将列的完整数据作为索引时不合适的, 这样会导致索引效率慢</p>
+<p>当遇到这种情况时, 可以在创建索引时, 给列添加前缀长度限制, 这种索引成为<strong>前缀索引</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 该索引只取用户名的前2字符作为索引字段</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX `sub_username_index` <span class="keyword">ON</span> `<span class="keyword">user</span>` (`username`(<span class="number">2</span>));</span><br></pre></td></tr></table></figure>
+
+<h4 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h4><blockquote>
+<p>此处可在阅读下文 <em>执行计划 § Explain</em> 部分介绍之后再阅读</p>
+</blockquote>
+<blockquote>
+<p>在普通索引之后还有联合索引, 这种索引比普通索引有更少的时间与空间复杂度, 并以索引树的方式存储</p>
+</blockquote>
+<p>可以将多列同时作为索引字段来创建联合索引, 这样创建的索引与普通索引有所不同</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建一个3列的联合索引</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX `index` <span class="keyword">ON</span> `<span class="keyword">table</span>` (`column1`, `column2`, `column3`);</span><br></pre></td></tr></table></figure>
+
+<p>这样相当于创建了 </p>
+<ol>
+<li><code>column1</code>的单列索引</li>
+<li><code>column1</code>与<code>column2</code>的联合索引</li>
+<li><code>column1</code>, <code>column2</code>与<code>column3</code>的联合索引</li>
+</ol>
+<h5 id="最左匹配原则"><a href="#最左匹配原则" class="headerlink" title="最左匹配原则"></a><strong>最左匹配原则</strong></h5><p>联合索引<strong>从最左开始匹配</strong>, 最左指索引创建时的顺序最左</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 以column2与column3作为条件, 不会用到联合索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">table</span>` <span class="keyword">WHERE</span> `column2` <span class="operator">=</span> <span class="number">2</span> <span class="keyword">AND</span> `column3` <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 以column2与column1作为条件, 会用到联合索引, 顺序不影响</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">table</span>` <span class="keyword">WHERE</span> `column2` <span class="operator">=</span> <span class="number">2</span> <span class="keyword">AND</span> `column1` <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 以column1与column3作为条件, 会用到索引, 但是是column1的单列索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">table</span>` <span class="keyword">WHERE</span> `column1` <span class="operator">=</span> <span class="number">1</span> <span class="keyword">AND</span> `column3` <span class="operator">=</span> <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<h5 id="举例"><a href="#举例" class="headerlink" title="举例"></a><strong>举例</strong></h5><p>以上述用户表为例, 若实际场景中经常有需要通过<code>username</code>与<code>password</code>共同判断来查询的内容的情况, 那么可以创建联合索引</p>
+<p>创建方式也有如上多种, 此处不赘述</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建一个id与用户名的联合索引</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX `username_password_index` <span class="keyword">ON</span> `<span class="keyword">user</span>` (`username`, `password`);</span><br></pre></td></tr></table></figure>
+
+<p>查看<code>user</code>的索引</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> INDEX <span class="keyword">FROM</span> `<span class="keyword">user</span>`;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Non_unique</th>
+<th>Key_name</th>
+<th>Seq_in_index</th>
+<th>Column_name</th>
+<th>Collation</th>
+<th>Cardinality</th>
+<th>Sub_part</th>
+<th>Packed</th>
+<th>Null</th>
+<th>Index_type</th>
+<th>Comment</th>
+<th>Index_comment</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>user</td>
+<td>0</td>
+<td>PRIMARY</td>
+<td>1</td>
+<td>id</td>
+<td>A</td>
+<td>0</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td></td>
+<td>BTREE</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>user</td>
+<td>1</td>
+<td>username_password_index</td>
+<td>1</td>
+<td>username</td>
+<td>A</td>
+<td>0</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td></td>
+<td>BTREE</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>user</td>
+<td>1</td>
+<td>username_password_index</td>
+<td>2</td>
+<td>password</td>
+<td>A</td>
+<td>0</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td></td>
+<td>BTREE</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>此处可以看到, 同一索引名产生了两条索引, 它们的索引顺序与对应列名不同</p>
+<p>接下来进行<code>Explain</code>分析</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 通过用户名与密码查询用户</span></span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">user</span>` <span class="keyword">WHERE</span> `username` <span class="keyword">LIKE</span> <span class="string">&#x27;T%&#x27;</span> <span class="keyword">AND</span> `password` <span class="operator">=</span> <span class="string">&#x27;password1&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 通过用户名查询用户</span></span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">user</span>` <span class="keyword">WHERE</span> `username` <span class="keyword">LIKE</span> <span class="string">&#x27;T%&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 通过密码查询用户</span></span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">user</span>` <span class="keyword">WHERE</span>                          `password` <span class="operator">=</span> <span class="string">&#x27;password1&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>显示结果</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>user</td>
+<td><code>null</code></td>
+<td>range</td>
+<td>username_password_index</td>
+<td>username_password_index</td>
+<td>198</td>
+<td><code>null</code></td>
+<td>2</td>
+<td>25.00</td>
+<td>Using index condition</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>user</td>
+<td><code>null</code></td>
+<td>range</td>
+<td>username_password_index</td>
+<td>username_password_index</td>
+<td>99</td>
+<td><code>null</code></td>
+<td>2</td>
+<td>100.00</td>
+<td>Using index condition</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>user</td>
+<td><code>null</code></td>
+<td>ALL</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td>4</td>
+<td>25.00</td>
+<td>Using where</td>
+</tr>
+</tbody></table>
+<p>对比三条语句所用到的结果, 可以发现</p>
+<ol>
+<li>同时将<code>username</code>与<code>password</code>作为判断条件时, 用到了索引<code>username_password_index</code></li>
+<li>只将<code>username</code>作为判断条件时, 用到了索引<code>username_password_index</code></li>
+<li>只将<code>password</code>作为判断条件时, 没有用到索引</li>
+</ol>
+<p>也就证明了, 存在<code>username</code>的单列索引, 存在<code>username</code>与<code>password</code>的联合索引, 但是<strong>不存在<code>password</code>的单列索引</strong></p>
+<h2 id="执行计划-§-Explain"><a href="#执行计划-§-Explain" class="headerlink" title="执行计划 § Explain"></a>执行计划 § Explain</h2><h3 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h3><p>在查询语句前加上<code>Explain</code>关键字, 会进行语句的执行计划分析, 会检查这条语句用到了哪些检索, 是否有进行全表扫描等</p>
+<h3 id="使用-1"><a href="#使用-1" class="headerlink" title="使用"></a>使用</h3><h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>若存在表<code>user</code>与表<code>user_type</code>如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 用户表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `<span class="keyword">user</span>` (</span><br><span class="line">    `id` <span class="type">INT</span> AUTO_INCREMENT <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">    `username` <span class="type">VARCHAR</span>(<span class="number">32</span>) COMMENT <span class="string">&#x27;用户名&#x27;</span>,</span><br><span class="line">    `password` <span class="type">VARCHAR</span>(<span class="number">32</span>) COMMENT <span class="string">&#x27;密码&#x27;</span>,</span><br><span class="line">    `type_id` <span class="type">INT</span> COMMENT <span class="string">&#x27;类型ID&#x27;</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 用户名索引</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX `username_index` <span class="keyword">ON</span> `<span class="keyword">user</span>` (`username`);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 用户类型表</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `user_type` (</span><br><span class="line">    `id` <span class="type">INT</span> AUTO_INCREMENT <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">    `typename` <span class="type">VARCHAR</span>(<span class="number">32</span>) COMMENT <span class="string">&#x27;类型名称&#x27;</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 类型名索引</span></span><br><span class="line"><span class="keyword">CREATE</span> INDEX `typename_index` <span class="keyword">ON</span> `user_type` (`typename`);</span><br></pre></td></tr></table></figure>
+
+<p>并存在数据</p>
+<p><code>user</code></p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>username</th>
+<th>password</th>
+<th>type_id</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Token1</td>
+<td><code>null</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Token2</td>
+<td><code>null</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>User1</td>
+<td><code>null</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>User2</td>
+<td><code>null</code></td>
+<td>2</td>
+</tr>
+</tbody></table>
+<p><code>user_type</code></p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>typename</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>user</td>
+</tr>
+<tr>
+<td>2</td>
+<td>admin</td>
+</tr>
+</tbody></table>
+<p>使用<code>Explain</code>语句对多表关联语句进行分析</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询用户表中用户名为T开头, 且类型为管理员的用户</span></span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> u.`username` <span class="keyword">FROM</span> `<span class="keyword">user</span>` <span class="keyword">AS</span> u <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> `user_type` <span class="keyword">AS</span> t <span class="keyword">ON</span> u.`type_id` <span class="operator">=</span> t.`id` <span class="keyword">WHERE</span> u.`username` <span class="keyword">LIKE</span> &quot;T%&quot; <span class="keyword">AND</span> t.`typename` <span class="operator">=</span> &quot;admin&quot;;</span><br></pre></td></tr></table></figure>
+
+<p>显示结果</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>select_type</th>
+<th>table</th>
+<th>partitions</th>
+<th>type</th>
+<th>possible_keys</th>
+<th>key</th>
+<th>key_len</th>
+<th>ref</th>
+<th>rows</th>
+<th>filtered</th>
+<th>Extra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>t</td>
+<td><code>null</code></td>
+<td>ref</td>
+<td>PRIMARY,typename_index</td>
+<td>typename_index</td>
+<td>99</td>
+<td><code>null</code></td>
+<td>1</td>
+<td>100.00</td>
+<td>Using index</td>
+</tr>
+<tr>
+<td>1</td>
+<td>SIMPLE</td>
+<td>u</td>
+<td><code>null</code></td>
+<td>range</td>
+<td>username_index</td>
+<td>username_index</td>
+<td>99</td>
+<td>const</td>
+<td>2</td>
+<td>25.00</td>
+<td>Using index condition; Using where; Using join buffer (Block Nested Loop)</td>
+</tr>
+</tbody></table>
+<h5 id="字段解释-1"><a href="#字段解释-1" class="headerlink" title="字段解释"></a><strong>字段解释</strong></h5><ol>
+<li><p><code>id</code>: <code>SELECT</code>的查询顺序序列号</p>
+</li>
+<li><p><code>select_type</code>: 查询类型</p>
+</li>
+<li><p><code>table</code>: 表名</p>
+</li>
+<li><p><code>partition</code>: 匹配的分区</p>
+</li>
+<li><p><code>type</code>: 对表的查询方式</p>
+<ul>
+<li>常用的类型(<strong>性能排序</strong>): <strong><code>ALL</code> &lt; <code>index</code> &lt; <code>range</code> &lt; <code>ref</code> &lt; <code>eq_ref</code> &lt; <code>const</code> &lt; <code>system</code> &lt; <code>NULL</code></strong></li>
+</ul>
+</li>
+<li><p><code>possible_keys</code>: 能用的索引, 但不一定被用到</p>
+</li>
+<li><p><code>keys</code>: <strong>实际用到的索引</strong></p>
+</li>
+<li><p><code>key_len</code>: 索引字段的最大可能长度</p>
+</li>
+<li><p><code>ref</code>: 使用常量查询则显示<code>const</code>, 连接查询则显示关联字段</p>
+</li>
+<li><p><code>rows</code>: 估算的结果行数</p>
+<ul>
+<li>只是预估行数, 并非准确行数</li>
+</ul>
+</li>
+<li><p><code>filtered</code>: 数据经过过滤后满足条件的数据的百分比</p>
+</li>
+<li><p><code>Extra</code>: 查询的其他详细信息</p>
+<p>常见信息</p>
+<ol>
+<li><code>Using index</code>: 使用了索引</li>
+<li><code>Using where</code>: 不用读取表中所有信息，仅通过索引就可以获取所需数据</li>
+<li><code>Using join buffer</code>: 说明在获取连接条件时没有使用索引，并且需要连接缓冲区来存储中间结果<ul>
+<li><strong>一般出现这句话可以通过添加索引来优化</strong></li>
+</ul>
+</li>
+<li><code>Using filesort</code>: 说明<code>MySQL</code>无法通过索引来进行排序, 需要通过外部排序, 这种排序就是文件排序<ul>
+<li><strong>出现这句话需要注意, 数据量大的情况下可能会拖累性能, 需要及时优化</strong></li>
+</ul>
+</li>
+<li><code>Using temporary</code>: 说明使用了临时表保存中间结果来进行排序<ul>
+<li><strong>需要马上优化</strong></li>
+</ul>
+</li>
+<li><code>Impossible where</code>: 说明存在会导致无结果的<code>WHERE</code></li>
+</ol>
+</li>
+</ol>
+<h2 id="慢查询日志-§-Slow-Query-Log"><a href="#慢查询日志-§-Slow-Query-Log" class="headerlink" title="慢查询日志 § Slow Query Log"></a>慢查询日志 § Slow Query Log</h2><h3 id="介绍-2"><a href="#介绍-2" class="headerlink" title="介绍"></a>介绍</h3><p>慢查询日志开启后会记录执行时间大于某指定时间长度的查询</p>
+<p>可以通过查看慢查询记录, 配合<code>Explain</code>关键字进行<code>SQL</code>语句优化</p>
+<h3 id="配置与使用"><a href="#配置与使用" class="headerlink" title="配置与使用"></a>配置与使用</h3><h4 id="开启慢查询日志记录"><a href="#开启慢查询日志记录" class="headerlink" title="开启慢查询日志记录"></a>开启慢查询日志记录</h4><p>以下为<code>Linux</code>的开启方法, <code>Windows</code>类似</p>
+<ul>
+<li><p>方法一, 通过配置文件开启</p>
+<blockquote>
+<p><code>Windows</code>系统中配置文件为<code>my.ini</code>, 在MySQL安装过程中手动创建<br><code>Linux</code>系统中配置文件为<code>my.cnf</code>, 在<code>/etc</code>或<code>/etc/mysql</code>中</p>
+</blockquote>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[mysqld]</span></span><br><span class="line"><span class="comment"># 开启慢查询日志, 值也可为1</span></span><br><span class="line"><span class="attr">slow_query_log</span> = <span class="literal">on</span></span><br><span class="line"><span class="comment"># 指定日志文件, 需要手动创建文件</span></span><br><span class="line"><span class="attr">sloq_query_log_file</span> = /var/log/mysql/slow_query.log</span><br><span class="line"><span class="comment"># 指定慢查询时间, 单位秒</span></span><br><span class="line"><span class="attr">long_query_time</span> = <span class="number">2</span></span><br></pre></td></tr></table></figure></li>
+<li><p>方法二, 在<code>MySQL</code>中通过指令开启</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 开去慢查询日志, 其他属性配置方式与上配置类似</span></span><br><span class="line"><span class="keyword">SET</span> <span class="keyword">GLOBAL</span> slow_query_log <span class="operator">=</span> <span class="keyword">on</span>;</span><br></pre></td></tr></table></figure>
+
+<p>需要通过<code>bash</code>重启<code>mysql</code>服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service mysqld restart</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>注意点</strong></p>
+<ol>
+<li><p><code>CentOS</code>需要配置日志文件的所有者, 执行<code>chown mysql:mysql /var/log/mysql/slow_query.log</code>可以将日志文件所有者设置为<code>mysql</code></p>
+</li>
+<li><p><code>CentOS</code>或其他<code>Linux</code>系统环境若在如上所有配置完之后依然不能开启慢查询日志, 则还需要配置<code>SELinux</code>(安全增强型<code>Linux</code>)信息</p>
+<p>步骤</p>
+<ol>
+<li>查找 &amp; 安装工具包<ol>
+<li>执行<code>yum provides /usr/sbin/semanage</code>查询指令所在包</li>
+<li>执行<code>yum install -y xxx</code>进行安装, xxx是上面一条指令所提供的包, 一般完整包名以<code>policycoreutil-python</code>开头</li>
+</ol>
+</li>
+<li>执行<code>semanage fcontext -a -t mysqld_log_t /var/log/mysql/slow_query.log</code>, 这条指令将日志文件的默认安全类型设定为<code>mysql_log_t</code></li>
+<li>执行<code>restorecon -Rv /var/log/mysql/slow_query.log</code>, 这条指令将回复日志文件的安全上下文至刚设定的状态</li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+<h4 id="查看慢查询日志记录"><a href="#查看慢查询日志记录" class="headerlink" title="查看慢查询日志记录"></a>查看慢查询日志记录</h4><p><code>bash</code>中执行如下语句可以查看慢查询记录, 也可以通过<code>cat</code>指令查看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow -a /var/<span class="built_in">log</span>/mysql/slow_query.log</span><br></pre></td></tr></table></figure>
+
+<p>在查询前可以通过如下<code>SQL</code>语句来手动添加一条慢查询语句:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 休眠3秒</span></span><br><span class="line"><span class="keyword">SELECT</span> SLEEP();</span><br></pre></td></tr></table></figure>
+
+<p>查询结果为:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Reading mysql slow query log from /var/log/mysql/slow_query.log</span><br><span class="line">Count: 1  Time=3.00s (3s)  Lock=0.00s (0s)  Rows=1.0 (1), root[root]@[192.168.56.1]</span><br><span class="line">  SELECT SLEEP(3)</span><br><span class="line">  LIMIT 0, 1000</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="其他优化手段与细节-§-Details"><a href="#其他优化手段与细节-§-Details" class="headerlink" title="其他优化手段与细节 § Details"></a>其他优化手段与细节 § Details</h2><ol>
+<li><p>任何地方都不要使用星号<code>*</code>来进行查询, 使用具体的字段来代替它, 不要返回用不到的字段</p>
+</li>
+<li><p>注意缓存的使用</p>
+<p><code>MySQL</code>会产生<code>SQL</code>缓存, 重复查询时会使用缓存中的数据, 在表内容更新后消失</p>
+<p>在调试过程中若重复执行统一语句, 产生结果的时间可能会受缓存影响, 所以在必要时需要加上关键字<code>SQL_NO_CACHE</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 可能会受缓存影响</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">user</span>`;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 不会受到缓存影响</span></span><br><span class="line"><span class="keyword">SELECT</span> SQL_NO_CACHE <span class="operator">*</span> <span class="keyword">FROM</span> `<span class="keyword">user</span>`;</span><br></pre></td></tr></table></figure>
+
+<p>测试过程中使用<code>SQL_NO_CACHE</code>并不代表数据库不适用缓存, 只是该语句不使用</p>
+</li>
+<li><p>模糊查询时不要前置百分号<code>%</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 不要这么做</span></span><br><span class="line"><span class="keyword">SELECT</span> `id` <span class="keyword">FROM</span> `<span class="keyword">user</span>` <span class="keyword">WHERE</span> `username` <span class="keyword">LIKE</span> <span class="string">&#x27;%T%&#x27;</span>;</span><br></pre></td></tr></table></figure></li>
+<li><p>使用事务</p>
+<p>当一次请求涉及到多条<code>SQL</code>修改操作, 若失败时也需要按顺序回滚, 这时可以使用到事务</p>
+<p>使用<code>BEGIN</code>, <code>COMMIT</code>与<code>ROLLBACK</code>指令进行事务处理</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 开始事务</span></span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="comment">-- 数据操作</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> ...</span><br><span class="line"><span class="comment">-- 数据操作</span></span><br><span class="line">UPDATE ...</span><br><span class="line"><span class="comment">-- 完成事务, 数据操作成功</span></span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 开始事务</span></span><br><span class="line"><span class="keyword">BEGIN</span>;</span><br><span class="line"><span class="comment">-- 数据操作</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> ...</span><br><span class="line"><span class="comment">-- 数据操作</span></span><br><span class="line">UPDATE ...</span><br><span class="line"><span class="comment">-- 回滚事务, 数据将会回滚至BEGIN时的状态</span></span><br><span class="line"><span class="keyword">ROLLBACK</span>;</span><br></pre></td></tr></table></figure></li>
+<li><p>分库分表</p>
+<p>介绍</p>
+<ul>
+<li><p>分库: 将单个数据库中的表拆分到多个数据库中</p>
+</li>
+<li><p>分表: 将单个表中的数据拆分到多个表中</p>
+</li>
+</ul>
+<p>原因</p>
+<ul>
+<li>性能方面<ul>
+<li>表过多将增大数据库的连接压力, 分库将连接压力分散到多个数据库上</li>
+<li>单表数据量过大将降低CRUD性能, 分表将提高每个表的性能</li>
+</ul>
+</li>
+<li>可用性方面<ul>
+<li>单数据库或表在发生意外时容易同时丢失所有数据, 分库分表后若发生意外还可以继续维持一部分服务</li>
+</ul>
+</li>
+<li>使用: <a target="_blank" rel="noopener" href="https://www.zhihu.com/question/448775613">什么是分库分表，为什么要分库分表？</a></li>
+</ul>
+</li>
+</ol>
+<h2 id="总结-§-Summary"><a href="#总结-§-Summary" class="headerlink" title="总结 § Summary"></a>总结 § Summary</h2><ol>
+<li>使用索引, 可以的话使用联合索引, 要注意大字段使用前缀索引</li>
+<li>开启慢查询日志, 记录慢查询, 一般在测试或生产环境中使用</li>
+<li>使用<code>Explain</code>来分析慢查询的<code>SQL</code>语句, 是否有用到索引, 是否时全表检查等</li>
+<li><code>SQL</code>分析时注意<code>MySQL</code>的缓存</li>
+<li>注意基本<code>SQL</code>的书写细节, 不要用星号<code>*</code>进行查询, 不要在<code>LIKE</code>内容的最前面加百分号<code>%</code>, 合理使用事务功能, 在表数量过多或数据量过大时进行分库分表</li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/36431635">常见的数据库优化方法</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.runoob.com/mysql/mysql-index.html">MySQL 索引 菜鸟教程</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wongdw/p/12887174.html">mysql的联合索引（复合索引）</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/cdx_akang/article/details/83900427">MySQL SHOW INDEX 的语法解析</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/lvhaizhen/article/details/90763799">mysql 用法 Explain</a></li>
+<li><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html">The Slow Query Log MySQL</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/68720991/still-cant-enable-the-slow-query-log">Still can’t enable the slow query log</a></li>
+<li><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.7/en/selinux-file-context.html">SELinux File Context</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/tufujie/p/9413852.html">MySQL Explain详解</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.runoob.com/mysql/mysql-transaction.html">MySQL 事务 菜鸟教程</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/448775613">什么是分库分表，为什么要分库分表？</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/database/" rel="tag"># database</a>
+              <a href="/tags/mysql/" rel="tag"># mysql</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/11/20/Community%E7%89%88%E6%9C%ACIDEA%E6%90%AD%E5%BB%BAWeb%E9%A1%B9%E7%9B%AE/" rel="prev" title="Community版本IDEA搭建Web项目">
+                  <i class="fa fa-chevron-left"></i> Community版本IDEA搭建Web项目
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/08/25/Arthas%E5%85%A5%E9%97%A8%E6%89%8B%E5%86%8C/" rel="next" title="Arthas入门手册">
+                  Arthas入门手册 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tomoto</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
