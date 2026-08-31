@@ -118,10 +118,9 @@ body:has(.pswp) #VPContent {
   overflow: hidden;
 }
 
-/* 移动端：桌面导航栏里的图标按钮隐藏（日历按钮进汉堡菜单，深浅开关用菜单内原生控件） */
+/* 移动端：隐藏汉堡菜单（导航栏没有其他链接，无需展开），右上角与桌面端一致直接显示深浅按钮 */
 @media (max-width: 767px) {
-  .VPNavBar .placement-popover,
-  .VPNavBar .appearance-btn {
+  .VPNavBar .hamburger {
     display: none;
   }
 }
