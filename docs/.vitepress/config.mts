@@ -87,8 +87,6 @@ export default defineConfig({
   },
 
   themeConfig: {
-    nav: [{ text: '首页', link: '/' }],
-
     outlineTitle: '本页目录',
 
     search: {
@@ -113,11 +111,6 @@ export default defineConfig({
           },
         },
       },
-    },
-
-    footer: {
-      message: '由 VitePress 强力驱动',
-      copyright: '© Tomoto',
     },
   },
 })
