@@ -2,7 +2,7 @@
 title: 将Haskell中的ADT与GADT在Java中实现
 date: 2020-10-21
 tags:
-  - functional-programming
+  - 函数式
 ---
 首先感谢雨轩老师
 

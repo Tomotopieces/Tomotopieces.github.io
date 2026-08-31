@@ -1,7 +1,9 @@
 ---
-title: "Community版本IDEA搭建Web项目"
-date: '2020-11-20'
-tags: ["java", "tool"]
+title: Community版本IDEA搭建Web项目
+date: 2020-11-20
+tags:
+  - java
+  - 笔记
 ---
 本来因为IDEA的Community版本没有自带支持Web和JavaEE的快捷开发, 所以尝试转用Eclipse. 但因为Eclipse太痛苦了, 十分不习惯, 所以还是找了IDEA的方法
 

@@ -1,7 +1,9 @@
 ---
-title: "Windows下的MySQL环境搭建"
-date: '2020-10-23'
-tags: ["database", "mysql"]
+title: Windows下的MySQL环境搭建
+date: 2020-10-23
+tags:
+  - mysql
+  - 数据库
 ---
 Windows系统下的MySQL环境搭建
 

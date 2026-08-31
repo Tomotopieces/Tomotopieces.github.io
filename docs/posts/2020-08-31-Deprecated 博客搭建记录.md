@@ -1,7 +1,8 @@
 ---
-title: "博客搭建记录"
-date: '2020-08-31'
-tags: ["common"]
+title: Deprecated 博客搭建记录
+date: 2020-08-31
+tags:
+  - 博客
 ---
 `hexo`框架搭建博客并挂载至`github`
 
