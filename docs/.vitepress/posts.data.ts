@@ -9,6 +9,8 @@ export interface Post {
   tags: string[]
   /** 文章简述：自动取正文首段，超长截断加省略号 */
   description: string
+  /** 是否置顶（frontmatter pinned: true） */
+  pinned: boolean
   /** 文章页面链接 */
   url: string
 }
@@ -44,6 +46,7 @@ export default createContentLoader('posts/*.md', {
         date: toDateStr(frontmatter.date),
         tags: Array.isArray(frontmatter.tags) ? frontmatter.tags.map(String) : [],
         description: truncate(firstParagraphText(html ?? ''), 120),
+        pinned: Boolean(frontmatter.pinned),
         url,
       }))
       .filter((post) => post.title && post.date)

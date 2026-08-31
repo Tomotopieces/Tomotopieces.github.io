@@ -9,8 +9,9 @@ const { site } = useData()
 const { selectedDate, selectDate } = usePostFilter()
 
 const filtered = computed(() => {
-  if (!selectedDate.value) return posts
-  return posts.filter((p) => p.date === selectedDate.value)
+  const list = selectedDate.value ? posts.filter((p) => p.date === selectedDate.value) : [...posts]
+  // 置顶的文章排最前，组内保持日期倒序（sort 稳定）
+  return list.sort((a, b) => Number(b.pinned) - Number(a.pinned))
 })
 
 function fmtCn(date: string): string {
@@ -39,6 +40,9 @@ function fmtCn(date: string): string {
         <article class="post-card">
           <time class="post-date" :datetime="post.date">{{ post.date }}</time>
           <h2 class="post-title">
+            <svg v-if="post.pinned" class="pin-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
+            </svg>
             <!-- 拉伸链接：::after 覆盖整张卡片，点击任意位置进入文章 -->
             <a :href="post.url">{{ post.title }}</a>
           </h2>
@@ -180,6 +184,15 @@ function fmtCn(date: string): string {
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.45;
+}
+
+.pin-icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 6px;
+  color: var(--vp-c-brand-1);
+  vertical-align: -2px;
+  flex-shrink: 0;
 }
 
 .post-title a {
