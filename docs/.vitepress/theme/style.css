@@ -1,0 +1,122 @@
+/* 浅色模式：暖米白柔和配色（深色模式保持 VitePress 默认，不受影响） */
+:root:not(.dark) {
+  --vp-c-bg: #faf8f4;
+  --vp-c-bg-soft: #f4f0e8;
+  --vp-c-bg-mute: #ece6da;
+  --vp-c-bg-alt: #efeae0;
+  --vp-c-bg-elv: #fdfcf9;
+  --vp-c-divider: rgba(115, 95, 70, 0.16);
+}
+
+/* 导航栏深浅开关已替换为自绘图标按钮（AppearanceButton.vue），隐藏内置 switch */
+.VPNavBar .VPNavBarAppearance {
+  display: none;
+}
+
+/* 深浅切换过渡动画：只渐变背景与边框，文字颜色即时切换——
+   文字做颜色过渡会被浏览器重新栅格化，产生闪烁（与 Vue 3 文档一致的做法） */
+html.theme-transition,
+html.theme-transition * {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transition,
+  html.theme-transition * {
+    transition: none !important;
+  }
+}
+
+/* 文章图片不触发浏览器原生拖拽，交给灯箱处理 */
+.vp-doc img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* 文章页标题下方的元信息（日期/标签） */
+.vp-doc .post-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0.75rem 0 1.75rem;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc .post-meta-date {
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+
+.vp-doc .post-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vp-doc .post-meta-tag {
+  font-size: 12px;
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+/* 导航栏图标按钮（日历/深浅）共享基础样式 */
+.nav-icon-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  transition: color 0.25s;
+}
+
+.nav-icon-btn:hover {
+  color: var(--vp-c-text-1);
+}
+
+.nav-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* 滚动条限制在内容区：navbar 固定不随页面滚动，窗口本身不再滚动 */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+#app {
+  height: 100%;
+}
+
+#VPContent {
+  height: calc(100dvh - var(--vp-nav-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 搜索弹窗 / 图片灯箱打开时锁定内容区滚动（原 body 锁定在容器滚动下失效） */
+body:has(.VPLocalSearchBox) #VPContent,
+body:has(.pswp) #VPContent {
+  overflow: hidden;
+}
+
+/* 移动端：桌面导航栏里的图标按钮隐藏（日历按钮进汉堡菜单，深浅开关用菜单内原生控件） */
+@media (max-width: 767px) {
+  .VPNavBar .placement-popover,
+  .VPNavBar .appearance-btn {
+    display: none;
+  }
+}

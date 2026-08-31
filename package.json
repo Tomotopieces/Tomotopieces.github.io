@@ -1,0 +1,16 @@
+{
+  "name": "tomoto-blog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs",
+    "new": "node scripts/new-post.mjs"
+  },
+  "devDependencies": {
+    "photoswipe": "^5.4.4",
+    "vitepress": "^1.6.4"
+  }
+}

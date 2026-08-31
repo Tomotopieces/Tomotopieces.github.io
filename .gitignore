@@ -1,0 +1,8 @@
+node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+/.vitepress/
+.obsidian/
+.zcode/
+*.log
+.DS_Store
