@@ -20,5 +20,7 @@ const profileUrl = 'https://github.com/Tomotopieces'
 <style scoped>
 .github-btn {
   text-decoration: none;
+  /* 把 GitHub + 深色模式推到导航栏最右侧，搜索框和日历留在左侧 */
+  margin-left: auto;
 }
 </style>

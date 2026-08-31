@@ -90,6 +90,11 @@ html.theme-transition * {
   height: 18px;
 }
 
+/* 搜索框不拉伸占满剩余空间，让日历按钮能紧贴其右侧 */
+.VPNavBar .content-body > .VPNavBarSearch {
+  flex: 0 1 auto;
+}
+
 /* 滚动条限制在内容区：navbar 固定不随页面滚动，窗口本身不再滚动 */
 html,
 body {

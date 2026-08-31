@@ -16,9 +16,8 @@ export default {
   },
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      // 桌面端：日历按钮移到搜索框旁边；右侧为 GitHub 图标 + 深浅模式按钮（内置 switch 已在 style.css 中隐藏）
-      'nav-bar-content-before': () => h(CalendarNav),
-      'nav-bar-content-after': () => [h(GitHubButton), h(AppearanceButton)],
+      // 桌面端：日历按钮在搜索框右边；右侧为 GitHub 图标 + 深浅模式按钮（内置 switch 已在 style.css 中隐藏）
+      'nav-bar-content-after': () => [h(CalendarNav), h(GitHubButton), h(AppearanceButton)],
       // 移动端：日历按钮放进汉堡菜单
       'nav-screen-content-before': () => h(CalendarNav, { placement: 'inline' }),
       // 全局图片灯箱与滚动容器适配
