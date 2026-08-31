@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Post } from '../../posts.data'
-import { smoothScrollTo } from '../composables/useSmoothScroll'
+import { navHeight, smoothScrollTo } from '../composables/useSmoothScroll'
 
 const props = defineProps<{ posts: Post[] }>()
 
@@ -98,8 +98,8 @@ function scrollToMonth(key: string) {
   const card = document.querySelector(`a[href="${post.url}"]`)?.closest('.post-card') as HTMLElement | null
   const c = document.querySelector('#VPContent')
   if (!card || !c) return
-  // 内容区自身就在 navbar 下方，目标卡片只需落到容器顶部之下留 8px 间隙
-  const top = card.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop - 8
+  // navbar 悬浮在内容区上方（fixed，高 navHeight）：目标卡片落到 navbar 之下 8px 处，不被遮挡
+  const top = card.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop - navHeight() - 8
   smoothScrollTo(c, top)
 }
 
@@ -112,12 +112,12 @@ function onClickMonth(key: string) {
   scrollToMonth(key)
 }
 
-// 手动滚动时高亮跟随（取第一个越过顶部的卡片），窗口同步展开到该月份
+// 手动滚动时高亮跟随（取第一个越过内容区可见上沿的卡片），窗口同步展开到该月份
 function updateActiveFromScroll() {
   const c = document.querySelector('#VPContent')
   if (!c) return
-  // 阈值取 0：跳转落点（8px 间隙）与判定解耦，避免 scrollTop 取整后卡在临界值
-  const threshold = 0
+  // 判定线 = navbar 高度：卡片顶部越过 navbar 才算当前月份，内容不会被遮挡
+  const threshold = navHeight()
   const cards = Array.from(document.querySelectorAll('.post-card'))
   let last: HTMLElement | null = null
   for (const card of cards) {
