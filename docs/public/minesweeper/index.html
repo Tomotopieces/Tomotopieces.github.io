@@ -1,220 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>Minesweeper</title>
-		<style>
-html, body, #canvas {
-	margin: 0;
-	padding: 0;
-	border: 0;
-}
-
-body {
-	color: white;
-	background-color: black;
-	overflow: hidden;
-	touch-action: none;
-}
-
-#canvas {
-	display: block;
-}
-
-#canvas:focus {
-	outline: none;
-}
-
-#status, #status-splash, #status-progress {
-	position: absolute;
-	left: 0;
-	right: 0;
-}
-
-#status, #status-splash {
-	top: 0;
-	bottom: 0;
-}
-
-#status {
-	background-color: #242424;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	visibility: hidden;
-}
-
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
-}
-
-#status-splash.show-image--false {
-	display: none;
-}
-
-#status-splash.fullsize--true {
-	height: 100%;
-	width: 100%;
-	object-fit: contain;
-}
-
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
-}
-
-#status-progress, #status-notice {
-	display: none;
-}
-
-#status-progress {
-	bottom: 10%;
-	width: 50%;
-	margin: 0 auto;
-}
-
-#status-notice {
-	background-color: #5b3943;
-	border-radius: 0.5rem;
-	border: 1px solid #9b3943;
-	color: #e0e0e0;
-	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-	line-height: 1.3;
-	margin: 0 2rem;
-	overflow: hidden;
-	padding: 1rem;
-	text-align: center;
-	z-index: 1;
-}
-		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+	<title>Minesweeper</title>
+	<style>
+		@font-face {
+			font-family: "LXGW";
+			src: url("loading-font.ttf") format("truetype");
+			font-weight: 700;
+			font-display: swap;
+		}
+		html, body, #canvas {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			width: 100%;
+			height: 100%;
+		}
+		body {
+			background: #F2F1EC;
+			color: #111111;
+			overflow: hidden;
+			touch-action: none;
+		}
+		body::before {
+			content: "";
+			position: fixed;
+			inset: -50%;
+			background-image: repeating-linear-gradient(
+				45deg,
+				rgba(17, 17, 17, 0.045) 0 18px,
+				transparent 18px 48px
+			);
+			animation: drift 24s linear infinite;
+			pointer-events: none;
+		}
+		@keyframes drift {
+			to { background-position: 96px 96px; }
+		}
+		#canvas {
+			display: block;
+			position: fixed;
+			inset: 0;
+			background: transparent;
+		}
+		#canvas:focus {
+			outline: none;
+		}
+		#status {
+			position: fixed;
+			inset: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			visibility: hidden;
+			z-index: 2;
+			pointer-events: none;
+		}
+		#status-loading {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		.logo {
+			width: 148px;
+			height: 148px;
+		}
+		.word {
+			margin-top: 30px;
+			font-family: "LXGW", "Noto Sans", "Droid Sans", Arial, sans-serif;
+			font-size: 52px;
+			font-weight: 700;
+			letter-spacing: 2px;
+			line-height: 1;
+			color: #111111;
+		}
+		#status-progress {
+			width: 240px;
+			height: 2px;
+			margin-top: 38px;
+			background: rgba(17, 17, 17, 0.14);
+			border-radius: 1px;
+			overflow: hidden;
+			display: none;
+		}
+		#status-progress-fill {
+			width: 0%;
+			height: 100%;
+			background: #111111;
+			transition: width 0.15s linear;
+		}
+		#status-notice {
+			display: none;
+			max-width: min(560px, calc(100vw - 48px));
+			padding: 18px 22px;
+			background: #F8E9E6;
+			border: 1px solid #C9534F;
+			border-radius: 10px;
+			color: #7A2C28;
+			font-family: "LXGW", "Noto Sans", "Droid Sans", Arial, sans-serif;
+			font-size: 15px;
+			line-height: 1.5;
+			overflow: hidden;
+			text-align: center;
+			pointer-events: auto;
+		}
+		#status-notice:empty {
+			display: none;
+		}
+	</style>
+	<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+<link rel="manifest" href="index.manifest.json">
 
-	</head>
-	<body>
-		<canvas id="canvas">
-			Your browser does not support the canvas tag.
-		</canvas>
+</head>
+<body>
+	<canvas id="canvas">
+		Your browser does not support the canvas tag.
+	</canvas>
 
-		<noscript>
-			Your browser does not support JavaScript.
-		</noscript>
+	<noscript>
+		Your browser does not support JavaScript.
+	</noscript>
 
-		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
-			<progress id="status-progress"></progress>
-			<div id="status-notice"></div>
+	<div id="status">
+		<div id="status-loading">
+			<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+				<rect x="10" y="10" width="108" height="108" rx="26" fill="#111111" stroke="#FFFFFF" stroke-width="6"/>
+				<rect x="37" y="28" width="7" height="62" rx="3.5" fill="#FFFFFF"/>
+				<path d="M44 32 H92 L78 48 L92 64 H44 Z" fill="#FF3B30"/>
+				<rect x="30" y="88" width="42" height="7" rx="3.5" fill="#FFFFFF"/>
+			</svg>
+			<div class="word">MINESWEEPER</div>
+			<div id="status-progress"><div id="status-progress-fill"></div></div>
 		</div>
+		<div id="status-notice"></div>
+	</div>
 
-		<script src="index.js"></script>
-		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4959568,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-const GODOT_THREADS_ENABLED = false;
-const engine = new Engine(GODOT_CONFIG);
+	<script src="index.js"></script>
+	<script>
+		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":5054516,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+		const GODOT_THREADS_ENABLED = false;
+		const engine = new Engine(GODOT_CONFIG);
 
-(function () {
-	const statusOverlay = document.getElementById('status');
-	const statusProgress = document.getElementById('status-progress');
-	const statusNotice = document.getElementById('status-notice');
+		(function () {
+			const statusOverlay = document.getElementById('status');
+			const statusLoading = document.getElementById('status-loading');
+			const statusProgress = document.getElementById('status-progress');
+			const statusProgressFill = document.getElementById('status-progress-fill');
+			const statusNotice = document.getElementById('status-notice');
 
-	let initializing = true;
-	let statusMode = '';
+			let initializing = true;
+			let statusMode = '';
 
-	function setStatusMode(mode) {
-		if (statusMode === mode || !initializing) {
-			return;
-		}
-		if (mode === 'hidden') {
-			statusOverlay.remove();
-			initializing = false;
-			return;
-		}
-		statusOverlay.style.visibility = 'visible';
-		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-		statusMode = mode;
-	}
-
-	function setStatusNotice(text) {
-		while (statusNotice.lastChild) {
-			statusNotice.removeChild(statusNotice.lastChild);
-		}
-		const lines = text.split('\n');
-		lines.forEach((line) => {
-			statusNotice.appendChild(document.createTextNode(line));
-			statusNotice.appendChild(document.createElement('br'));
-		});
-	}
-
-	function displayFailureNotice(err) {
-		console.error(err);
-		if (err instanceof Error) {
-			setStatusNotice(err.message);
-		} else if (typeof err === 'string') {
-			setStatusNotice(err);
-		} else {
-			setStatusNotice('An unknown error occurred.');
-		}
-		setStatusMode('notice');
-		initializing = false;
-	}
-
-	const missing = Engine.getMissingFeatures({
-		threads: GODOT_THREADS_ENABLED,
-	});
-
-	if (missing.length !== 0) {
-		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-			let serviceWorkerRegistrationPromise;
-			try {
-				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-			} catch (err) {
-				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-			}
-			// There's a chance that installing the service worker would fix the issue
-			Promise.race([
-				serviceWorkerRegistrationPromise.then((registration) => {
-					if (registration != null) {
-						return Promise.reject(new Error('Service worker already exists.'));
-					}
-					return registration;
-				}).then(() => engine.installServiceWorker()),
-				// For some reason, `getRegistration()` can stall
-				new Promise((resolve) => {
-					setTimeout(() => resolve(), 2000);
-				}),
-			]).then(() => {
-				// Reload if there was no error.
-				window.location.reload();
-			}).catch((err) => {
-				console.error('Error while registering service worker:', err);
-			});
-		} else {
-			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-			displayFailureNotice(missingMsg + missing.join('\n'));
-		}
-	} else {
-		setStatusMode('progress');
-		engine.startGame({
-			'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
+			function setStatusMode(mode) {
+				if (statusMode === mode || !initializing) {
+					return;
 				}
-			},
-		}).then(() => {
-			setStatusMode('hidden');
-		}, displayFailureNotice);
-	}
-}());
-		</script>
-	</body>
+				if (mode === 'hidden') {
+					statusOverlay.remove();
+					initializing = false;
+					return;
+				}
+				statusOverlay.style.visibility = 'visible';
+				statusLoading.style.display = mode === 'notice' ? 'none' : 'flex';
+				statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+				statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+				statusMode = mode;
+			}
+
+			function setStatusNotice(text) {
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				const lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			}
+
+			function displayFailureNotice(err) {
+				console.error(err);
+				if (err instanceof Error) {
+					setStatusNotice(err.message);
+				} else if (typeof err === 'string') {
+					setStatusNotice(err);
+				} else {
+					setStatusNotice('An unknown error occurred.');
+				}
+				setStatusMode('notice');
+				initializing = false;
+			}
+
+			const missing = Engine.getMissingFeatures({
+				threads: GODOT_THREADS_ENABLED,
+			});
+
+			if (missing.length !== 0) {
+				if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+					let serviceWorkerRegistrationPromise;
+					try {
+						serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+					} catch (err) {
+						serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+					}
+					Promise.race([
+						serviceWorkerRegistrationPromise.then((registration) => {
+							if (registration != null) {
+								return Promise.reject(new Error('Service worker already exists.'));
+							}
+							return registration;
+						}).then(() => engine.installServiceWorker()),
+						new Promise((resolve) => {
+							setTimeout(() => resolve(), 2000);
+						}),
+					]).then(() => {
+						window.location.reload();
+					}).catch((err) => {
+						console.error('Error while registering service worker:', err);
+					});
+				} else {
+					const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+					displayFailureNotice(missingMsg + missing.join('\n'));
+				}
+			} else {
+				setStatusMode('progress');
+				ensureOfflineCache().finally(function () {
+					engine.startGame({
+						'onProgress': function (current, total) {
+							if (current > 0 && total > 0) {
+								statusProgressFill.style.width = `${Math.round((current / total) * 100)}%`;
+							} else {
+								statusProgressFill.style.width = '30%';
+							}
+						},
+					}).then(() => {
+						setStatusMode('hidden');
+					}, displayFailureNotice);
+				});
+			}
+
+			async function ensureOfflineCache() {
+				if (!GODOT_CONFIG['serviceWorker'] || !('serviceWorker' in navigator)) {
+					return;
+				}
+				try {
+					const registration = await navigator.serviceWorker.register(GODOT_CONFIG['serviceWorker']);
+					await navigator.serviceWorker.ready;
+					if (navigator.serviceWorker.controller) {
+						return;
+					}
+					await new Promise((resolve) => {
+						const timer = setTimeout(resolve, 1500);
+						navigator.serviceWorker.addEventListener('controllerchange', () => {
+							clearTimeout(timer);
+							resolve();
+						}, { once: true });
+						const worker = registration.active || registration.waiting || registration.installing;
+						if (worker) {
+							worker.postMessage('claim');
+						}
+					});
+				} catch (error) {
+					console.warn('Offline cache unavailable:', error);
+				}
+			}
+		}());
+	</script>
+</body>
 </html>
 
