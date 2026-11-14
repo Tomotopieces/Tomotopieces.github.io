@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1794632934|4469547';
+const CACHE_VERSION = '1794633286|4468057';
 /** @type {string} */
 const CACHE_PREFIX = 'Minesweeper-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
